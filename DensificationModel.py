@@ -4,14 +4,14 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 #----------------------------------
 def read_clean_csv(file, double_headed = True, x='temperatureC', y='density'):
-    '''
+    """
     Reads and cleans a csv imported from WebPlotDigitilizer
 
     file: csv file imported from WebPlotDigitilizer.
-    double_headed: weather the csv has more two headers (e.g. 2Kmin and [x,y])
+    double_headed: whether the csv has more two headers
     x: name of the columns that represents the x axis
     y: name of the columns that represents the y axis
-    '''
+    """
     if double_headed:
         df = pd.read_csv(file, header=[0,1])
         new_cols = [list(tup) for tup in df.columns.values]
@@ -31,8 +31,9 @@ def read_clean_csv(file, double_headed = True, x='temperatureC', y='density'):
     df.reset_index(inplace=True, drop=True)
     return df
 
-def gomez_hotza(Tmax:float, Tinit:float, beta:float, n:float, A: float, Ea: float, theta0: float, G:float, total_time:float, dt:float, R = 8.31446262, beta_SI = False, as_df=False):
-    '''
+def gomez_hotza(Tmax:float, Tinit:float, beta:float, n:float, A: float, Ea: float, theta0: float,
+                G:float, total_time:float, dt:float, R = 8.31446262, beta_SI = False, as_df=False):
+    """
     Returns a 2D array with the values of time or temperature and the density or porosity of a material in a sintering process
     
     Tmax: maximum temperature in the process, in °C
@@ -46,10 +47,9 @@ def gomez_hotza(Tmax:float, Tinit:float, beta:float, n:float, A: float, Ea: floa
     total_time: the total time in the process, in s
     dt: size of each time step, in s
     R: molar gas constant
-    beta_SI: weather the beta value is expressed in °C(K)/s or not
-    xaxis: weather the X axis is 'Temperature' or 'Time'
-    yaxis: weather the Y axis is 'Density' or 'Porosity'
-    '''
+    beta_SI: wheter the beta value is expressed in °C(K)/s or not
+    as_df: if True, the function will return a pandas DataFrame, if False, the function will return a numpy array.
+    """
 
     #Fixed numbers    
     tsteps = int(total_time/dt)
@@ -80,7 +80,7 @@ def gomez_hotza(Tmax:float, Tinit:float, beta:float, n:float, A: float, Ea: floa
 
         if T[i] > Tmax:
             T[i] = Tmax
-            break #breaks in case the temperature exceeds Tmax
+            break #breaks in case the temperature exceeds Tmax, begining of isothermal regime
     p -= 1
     #Porosity and density arrays
     theta = np.zeros(tsteps)
@@ -109,11 +109,14 @@ def gomez_hotza(Tmax:float, Tinit:float, beta:float, n:float, A: float, Ea: floa
         
     return results
 
-def validation(df, dfX:object, dfY:object, n_values:list, A_values:list, Ea_values:list,  Tmax:float, Tinit:float, beta:float, theta0: float, G:float, R = 8.31446262, beta_SI = False):
-    '''
+def validation(df, dfX:object, dfY:object, n_values:list, A_values:list, Ea_values:list,  Tmax:float,
+               Tinit:float, beta:float, theta0: float, G:float, R = 8.31446262, beta_SI = False):
+    """
     Applies a 3D grid search to the gomez_hotza() function.
     
     df: DataFrame with the reference values
+    dfX: reference values of x axis, one of ['temperatureK', 'temperatureC', 'time', 'time_min']
+    dfY: dfX: reference values of y axis, one of ['density', 'porosity']
     n_values: list of values of n to be tested
     A_values: list of values of A to be tested
     Ea_values: list of values of Ea to be tested
@@ -123,11 +126,9 @@ def validation(df, dfX:object, dfY:object, n_values:list, A_values:list, Ea_valu
     theta0: initial porosity, dimensionless
     G: mean particle size, in m
     R: molar gas constant
-    beta_SI: weather the beta value is expressed in °C(K)/s or not
-    xaxis: weather the X axis is 'Temperature' or 'Time'
-    yaxis: weather the Y axis is 'Density' or 'Porosity'
-    '''
-    validX = ['temperatureK', 'time', 'temperatureC', 'time_min']
+    beta_SI: whether the beta value is expressed in °C(K)/s or not
+    """
+    validX = ['temperatureK', 'temperatureC', 'time', 'time_min']
     validY = ['density', 'porosity']
 
     if dfX not in validX:
