@@ -4,8 +4,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import inquirer
 
-ytzp = {'material':['yttria-stabilized zirconia'], 'chemical_reference':['3YTZP'], 'A':[595], 'Ea' :[191500], 'n':[0.4]}
-materials = pd.DataFrame.from_dict(ytzp, orient='columns')
+material = {'material':['yttria-stabilized zirconia','alumina'], 'chemical_reference':['3YTZP','Al2O3'], 'A':[595,1900], 'Ea' :[191500, 200000.0], 'n':[0.4, 0.3]}
+materials = pd.DataFrame.from_dict(material, orient='columns')
 
 def gomez_hotza(Tmax:float, Tinit:float, beta:float, n:float, A: float, Ea: float, theta0: float, G:float, total_time:float, dt:float, R = 8.31446262, beta_SI = False, as_df = False):
     """
@@ -85,15 +85,14 @@ def gomez_hotza(Tmax:float, Tinit:float, beta:float, n:float, A: float, Ea: floa
         results['temperatureC'] = results['temperatureK'] - 273
     
     return results
-
+choices = list(pd.unique(materials['chemical_reference']))
 question1 = [
-  inquirer.List(name='material',
+  inquirer.List(name='userMaterial',
                 message="Qual material você deseja sinterizar?",
-                choices=['3YTZP'],
-            ),
+                choices=choices),
 ]
 answer1 = inquirer.prompt(question1)
-material = answer1['material']
+userMaterial = answer1['userMaterial']
 print('Responda as perguntas abaixos apenas com números\n')
 userG = float(input('Qual é o tamanho, em m, de partícula do seu material? '))
 userBeta = float(input('Qual taxa de aquecimento você deseja utilizar? '))
@@ -113,7 +112,7 @@ userTmax = float(input('Qual é a temperatura máxima, em °C, que você deseja 
 userTinit = float(input('Qual é a temperatura inicial, em °C, que você deseja realizar a sinterização? '))
 userTime = float(input('Por quanto tempo, em s, você deseja sinterizar seu material? '))
 userTheta0 = float(input('Qual é a porosidade relativa inicial de seu compactado? '))
-materialRow = materials[materials['chemical_reference'] == material]
+materialRow = materials[materials['chemical_reference'] == userMaterial]
 userA = float(materialRow['A'])
 userEa = float(materialRow['Ea'])
 userN = float(materialRow['n'])
@@ -141,5 +140,5 @@ sns.lineplot(data = resultado,
 
 plt.xlabel('Temperatura, °C')
 plt.ylabel('Densidade relativa')
-plt.title(f'Simulação de {material} a {userBeta}{userUnidade}')
+plt.title(f'Simulação de {userMaterial} a {userBeta}{userUnidade}')
 plt.show()
