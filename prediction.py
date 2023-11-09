@@ -83,6 +83,7 @@ def gomez_hotza(Tmax:float, Tinit:float, beta:float, n:float, A: float, Ea: floa
         results = pd.DataFrame(results.T, columns=['time','temperatureK', 'density', 'porosity'])
         results['time_min'] = results['time']/60
         results['temperatureC'] = results['temperatureK'] - 273
+        results['time_hours'] = results['time_min']/60
     
     return results
 choices = list(pd.unique(materials['chemical_reference']))
@@ -97,13 +98,13 @@ print('Responda as perguntas abaixos apenas com números\n')
 userG = float(input('Qual é o tamanho, em m, de partícula do seu material? '))
 userBeta = float(input('Qual taxa de aquecimento você deseja utilizar? '))
 question2 = [
-  inquirer.List(name='unidade',
+  inquirer.List(name='unidadeBeta',
                 message="Em qual unidade você indicou a taxa de aquecimento?",
                 choices=['K/min', 'K/s'],
             ),
 ]
 answer2 = inquirer.prompt(question2)
-userUnidade = answer2['unidade']
+userUnidade = answer2['unidadeBeta']
 if userUnidade == 'K/min':
     userBetaSI = False
 else:
@@ -116,7 +117,27 @@ materialRow = materials[materials['chemical_reference'] == userMaterial]
 userA = float(materialRow['A'])
 userEa = float(materialRow['Ea'])
 userN = float(materialRow['n'])
-# print(type(userA), type(userEa), type(userN), type(userG), type(userBeta), type(userUnidade), type(userBetaSI), type(userTmax), type(userTinit), type(userTime), type(userTheta0))
+
+question3 = [
+  inquirer.List(name='unidadeXAxis',
+                message="Em qual unidade você gostaria de obter o eixo X do gráfico?",
+                choices=['Tempo(s)', 'Tempo(min)', 'Tempo(h)', 'Temperatura(°C)', 'Temperatura(K)'],
+                ),
+            ]
+answer3 = inquirer.prompt(question3)
+userXAxis= answer3['unidadeXAxis']
+converterX = {'Tempo(s)': 'time', 'Tempo(min)': 'time_min', 'Tempo(h)': 'time_hours', 'Temperatura(°C)':'temperatureC', 'Temperatura(K)':'temperatureK'}
+
+question4 = [
+  inquirer.List(name='unidadeYAxis',
+                message="Em qual unidade você gostaria de obter o eixo Y do gráfico?",
+                choices=['Densidade relativa', 'Porosidade']
+                )
+            ]
+answer4 = inquirer.prompt(question4)
+userYAxis= answer4['unidadeYAxis']
+converterY = {'Densidade relativa': 'density', 'Porosidade': 'porosity'}
+
 print('Simulando o processo...')
 
 resultado = gomez_hotza(Tmax=userTmax,
@@ -134,11 +155,12 @@ resultado = gomez_hotza(Tmax=userTmax,
                         )
 
 sns.lineplot(data = resultado, 
-             x='temperatureC',
-             y='density',
+             x=converterX[userXAxis],
+             y=converterY[userYAxis],
              )
 
-plt.xlabel('Temperatura, °C')
-plt.ylabel('Densidade relativa')
+plt.xlabel(userXAxis)
+plt.ylabel(userYAxis)
 plt.title(f'Simulação de {userMaterial} a {userBeta}{userUnidade}')
 plt.show()
+print('Fim da sinterização!')
