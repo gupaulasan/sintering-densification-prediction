@@ -114,9 +114,9 @@ userTinit = float(input('Qual é a temperatura inicial, em °C, que você deseja
 userTime = float(input('Por quanto tempo, em s, você deseja sinterizar seu material? '))
 userTheta0 = float(input('Qual é a porosidade relativa inicial de seu compactado? '))
 materialRow = materials[materials['chemical_reference'] == userMaterial]
-userA = float(materialRow['A'])
-userEa = float(materialRow['Ea'])
-userN = float(materialRow['n'])
+userA = float(materialRow.iloc[0]['A'])
+userEa = float(materialRow.iloc[0]['Ea'])
+userN = float(materialRow.iloc[0]['n'])
 
 question3 = [
   inquirer.List(name='unidadeXAxis',
